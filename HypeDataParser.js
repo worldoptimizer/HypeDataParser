@@ -8,7 +8,8 @@ http://code.google.com/p/csv-to-array/
 /*
 * Version-History
 * 1.0.0	Initial release under MIT-license
-* 1.0.2 Added minified version
+* 1.0.1 Added minified version
+* 1.0.2 Fixed minor typographic error Seperator to Separator
 */
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
 
