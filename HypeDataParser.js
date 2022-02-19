@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.1
+Hype Data Parser 1.0.2
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -8,7 +8,7 @@ http://code.google.com/p/csv-to-array/
 /*
 * Version-History
 * 1.0.0	Initial release under MIT-license
-* 1.0.1 Added minified version
+* 1.0.2 Added minified version
 */
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
 
@@ -17,8 +17,8 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
     /**
 	 * This function parses a CSV string into an array structur
      * Given a second paramter options of type object, default options can be overriden
-	 *      * fieldSeperator defaults to ','
-     *      * rowSeperator defaults to '\n'
+	 *      * fieldSeparator defaults to ','
+     *      * rowSeparator defaults to '\n'
      *      * quot defaults to '"'
      *      * head defaults to false and allows ignoring the first row
      *      * trim defaults to false
@@ -29,8 +29,8 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 */
      csvToArray = function (text, options) {
         var defaultOptions = {
-            'fieldSeperator': ';',
-            'rowSeperator': '\n',
+            'fieldSeparator': ';',
+            'rowSeparator': '\n',
             'quot': '"',
             'head': false,
             'trim': false
@@ -50,7 +50,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
                     }
                     break;
                 
-                case o.fieldSeperator:
+                case o.fieldSeparator:
                     if (!q) {
                         if (o.trim) {
                             a[r][f] = a[r][f].replace(/^\s\s*/, '').replace(/\s\s*$/, '');
@@ -61,14 +61,14 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
                     }
                     break;
                 
-                case o.rowSeperator.charAt(0):
-                    if (!q && (!o.rowSeperator.charAt(1) || (o.rowSeperator.charAt(1) && o.rowSeperator.charAt(1) == text.charAt(p + 1)))) {
+                case o.rowSeparator.charAt(0):
+                    if (!q && (!o.rowSeparator.charAt(1) || (o.rowSeparator.charAt(1) && o.rowSeparator.charAt(1) == text.charAt(p + 1)))) {
                         if (o.trim) {
                             a[r][f] = a[r][f].replace(/^\s\s*/, '').replace(/\s\s*$/, '');
                         }
                         a[++r] = [''];
                         a[r][f = 0] = '';
-                        if (o.rowSeperator.charAt(1)) {
+                        if (o.rowSeparator.charAt(1)) {
                             ++p;
                         }
                     } else {
@@ -126,7 +126,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} csvToObject Convert a CSV string into an object
 	 */
 	 var HypeDataParser = {
-		version: '1.0.1',
+		version: '1.0.2',
 		csvToArray: csvToArray,
         csvToObject: csvToObject,
 	};
