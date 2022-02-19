@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.2
+Hype Data Parser 1.0.3
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -10,6 +10,7 @@ http://code.google.com/p/csv-to-array/
 * 1.0.0	Initial release under MIT-license
 * 1.0.1 Added minified version
 * 1.0.2 Fixed minor typographic error Seperator to Separator
+* 1.0.3 Refactored head to removeHead, added forced removeHead false on csvToObject
 */
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
 
@@ -21,7 +22,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 *      * fieldSeparator defaults to ','
      *      * rowSeparator defaults to '\n'
      *      * quot defaults to '"'
-     *      * head defaults to false and allows ignoring the first row
+     *      * removeHead defaults to false and allows ignoring the first row
      *      * trim defaults to false
      * 
 	 * @param {String} text This is the text to consider as CSV
@@ -33,7 +34,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
             'fieldSeparator': ';',
             'rowSeparator': '\n',
             'quot': '"',
-            'head': false,
+            'removeHead': false,
             'trim': false
         }
         var o = typeof(options) == 'object'? Object.assign(defaultOptions, o) : defaultOptions;
@@ -83,7 +84,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
             }
         }
 
-        if (o.head) {
+        if (o.removeHead) {
             a.shift()
         }
 
@@ -97,7 +98,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
     /**
 	 * This function uses csvToArray (see function description), but converts 
      * the basic array into an object with keys based on the header.
-     * Because that is the case the head option cannot be overriden and a header
+     * Because that is the case the removeHead option cannot be overriden and a header
      * should be present in the CSV for this to work properly.
      * 
 	 * @param {String} text This is the text to consider as CSV
@@ -105,7 +106,9 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
      * @return {Array} Returns an array of rows with nested objects containing named fields
 	 */
     function csvToObject(text, options){
-        var rows = csvToArray(text, options);
+        var rows = csvToArray(text, Object.assign(options, {
+            removeHead: false
+        }));
         var headers = rows.shift();
         var data = [];
         
@@ -127,7 +130,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} csvToObject Convert a CSV string into an object
 	 */
 	 var HypeDataParser = {
-		version: '1.0.2',
+		version: '1.0.3',
 		csvToArray: csvToArray,
         csvToObject: csvToObject,
 	};
