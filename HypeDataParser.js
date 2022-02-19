@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.0
+Hype Data Parser 1.0.1
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -8,6 +8,7 @@ http://code.google.com/p/csv-to-array/
 /*
 * Version-History
 * 1.0.0	Initial release under MIT-license
+* 1.0.1 Added minified version
 */
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
 
@@ -22,7 +23,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
      *      * head defaults to false and allows ignoring the first row
      *      * trim defaults to false
      * 
-	 * @param {String} text This is the text to consodered as CSV
+	 * @param {String} text This is the text to consider as CSV
 	 * @param {Object} options This object can be used to override defaults
      * @return {Array} Returns an array of rows with nested arrays of field data
 	 */
@@ -98,7 +99,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
      * Because that is the case the head option cannot be overriden and a header
      * should be present in the CSV for this to work properly.
      * 
-	 * @param {String} text This is the text to consodered as CSV
+	 * @param {String} text This is the text to consider as CSV
 	 * @param {Object} options This object can be used to override defaults
      * @return {Array} Returns an array of rows with nested objects containing named fields
 	 */
@@ -125,7 +126,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} csvToObject Convert a CSV string into an object
 	 */
 	 var HypeDataParser = {
-		version: '1.0.0',
+		version: '1.0.1',
 		csvToArray: csvToArray,
         csvToObject: csvToObject,
 	};
