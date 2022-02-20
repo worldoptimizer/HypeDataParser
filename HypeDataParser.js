@@ -3,7 +3,6 @@ Hype Data Parser 1.0.4
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
-https://leanylabs.com/blog/js-csv-parsers-benchmarks/
 */
 
 /*
