@@ -164,12 +164,10 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	function csvToObjectByKey(csv, key){
 		if (!csv || !key) return;
 		
-		if (!Array.isArray(csv)) {
-			csv = csvToArray(csv);
-		}
+		if (!Array.isArray(csv)) csv = csvToArray(csv);
 
-		var rows = JSON.parse(JSON.stringify(csv));
-		var headers = rows.shift();
+		var rows = csv.slice(1);
+		var headers = csv.slice(0, 1)[0];		
 		var keyIndex = typeof key == 'number'? key : headers.indexOf(key);
 		var data = {};
 		
