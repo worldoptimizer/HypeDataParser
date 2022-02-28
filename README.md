@@ -5,3 +5,4 @@ Currently supports the following methods:
 
 * csvToArray
 * csvToObject
+* csvToObjectByKey
