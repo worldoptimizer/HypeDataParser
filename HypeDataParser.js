@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.4
+Hype Data Parser 1.0.5
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -12,11 +12,16 @@ http://code.google.com/p/csv-to-array/
 * 1.0.2 Fixed minor typographic error Seperator to Separator
 * 1.0.3 Refactored head to removeHead, added forced removeHead false on csvToObject
 * 1.0.4 Refactored some more aspects of this CSV parser by Daniel Tillin
+* 1.0.5 Added CSV to object by key method
+*/
+
+/*
+*https://leanylabs.com/blog/js-csv-parsers-benchmarks/
+*
 */
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
 
 	var _extensionName = 'Hype Data Parser';
-
 
 	function count(str, c) { 
 		var result = 0;
@@ -45,11 +50,12 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 *      * head defaults to false and allows ignoring the first row
 	 *      * trim defaults to false
 	 * 
-	 * @param {String} text This is the text to consider as CSV
+	 * @param {String} csv This is the text to consider as CSV
 	 * @param {Object} options This object can be used to override defaults
 	 * @return {Array} Returns an array of rows with nested arrays of field data
 	 */
-	function csvToArray(csv, o) {
+	function csvToArray(csv, options) {
+		if (!csv) return;
 		var od = {
 			'fSep': count(csv,';') > count(csv, ',')? ';' : ',',
 			'rSep': getLineBreakChar(csv),
@@ -57,29 +63,29 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 			'head': false,
 			'trim': false
 		}
-		if (o) {
+		if (options) {
 			for (var i in od) {
-				if (!o[i]) o[i] = od[i];
+				if (!options[i]) options[i] = od[i];
 			}
 		} else {
-			o = od;
+			options = od;
 		}
 		var a = [
 			['']
 		];
 		for (var r = f = p = q = 0; p < csv.length; p++) {
 			switch (c = csv.charAt(p)) {
-				case o.quot:
-					if (q && csv.charAt(p + 1) == o.quot) {
-						a[r][f] += o.quot;
+				case options.quot:
+					if (q && csv.charAt(p + 1) == options.quot) {
+						a[r][f] += options.quot;
 						++p;
 					} else {
 						q ^= 1;
 					}
 					break;
-				case o.fSep:
+				case options.fSep:
 					if (!q) {
-						if (o.trim) {
+						if (options.trim) {
 							a[r][f] = a[r][f].replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 						}
 						a[r][++f] = '';
@@ -87,14 +93,14 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 						a[r][f] += c;
 					}
 					break;
-				case o.rSep.charAt(0):
-					if (!q && (!o.rSep.charAt(1) || (o.rSep.charAt(1) && o.rSep.charAt(1) == csv.charAt(p + 1)))) {
-						if (o.trim) {
+				case options.rSep.charAt(0):
+					if (!q && (!options.rSep.charAt(1) || (options.rSep.charAt(1) && options.rSep.charAt(1) == csv.charAt(p + 1)))) {
+						if (options.trim) {
 							a[r][f] = a[r][f].replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 						}
 						a[++r] = [''];
 						a[r][f = 0] = '';
-						if (o.rSep.charAt(1)) {
+						if (options.rSep.charAt(1)) {
 							++p;
 						}
 					} else {
@@ -105,7 +111,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 					a[r][f] += c;
 			}
 		}
-		if (o.head) {
+		if (options.head) {
 			a.shift()
 		}
 		if (a[a.length - 1].length < a[0].length) {
@@ -121,13 +127,16 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * Because that is the case the removeHead option cannot be overriden and a header
 	 * should be present in the CSV for text to work properly.
 	 * 
-	 * @param {String} text This is the text to consider as CSV
+	 * @param {String} csv This is the text to consider as CSV
 	 * @param {Object} options This object can be used to override defaults
 	 * @return {Array} Returns an array of rows with nested objects containing named fields
 	 */
-	 function csvToObject(csv, o){
-
-		var rows = csvToArray(csv, o)
+	 function csvToObject(csv, options){
+		if (!csv) return;
+		options = options || {};
+		var rows = csvToArray(csv, Object.assign(options, {
+			head:false
+		}));
 		var headers = rows.shift();
 		var data = [];
 		
@@ -143,15 +152,51 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	}
 
 	/**
+	 * This function uses csvToObjectByKey (see function description), but converts 
+	 * the rows into an object with a keys based on specific a header key.
+	 * These branches in turn containing objects with keys based on the header.
+	 * This is ideal for ID based lookups.
+	 * 
+	 * @param {String} csv This is the text to consider as CSV
+	 * @param {String|Number} key Either the key as a name or the index as a number (0 based)
+	 * @return {Object} Returns an object with named keys with nested objects containing named fields
+	 */
+	function csvToObjectByKey(csv, key){
+		if (!csv || !key) return;
+		
+		if (!Array.isArray(csv)) {
+			csv = csvToArray(csv);
+		}
+
+		var rows = JSON.parse(JSON.stringify(csv));
+		var headers = rows.shift();
+		var keyIndex = typeof key == 'number'? key : headers.indexOf(key);
+		var data = {};
+		
+		if (keyIndex == -1) return;
+
+		rows.forEach(function(row){
+			var obj = {}
+			row.forEach(function(cell, i){
+				obj[ headers[i] ] = cell;
+			});
+			data[obj[headers[keyIndex]]] = obj;
+		});
+		
+		return data;
+	}
+
+	/**
 	 * @typedef {Object} HypeDataParser
 	 * @property {String} version Version of the extension
 	 * @property {Function} csvToArray Convert a CSV string into an array
 	 * @property {Function} csvToObject Convert a CSV string into an object
 	 */
 	 var HypeDataParser = {
-		version: '1.0.4',
+		version: '1.0.5',
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
+		csvToObjectByKey: csvToObjectByKey,
 		getLineBreakChar: getLineBreakChar,
 		count: count,
 	};
