@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.6
+Hype Data Parser 1.0.7
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -9,11 +9,12 @@ http://code.google.com/p/csv-to-array/
 * Version-History
 * 1.0.0	Initial release under MIT-license
 * 1.0.1 Added minified version
-* 1.0.2 Fixed minor typographic error Seperator to Separator
+* 1.0.2 Fixed minor typographic error Separator to Separator
 * 1.0.3 Refactored head to removeHead, added forced removeHead false on csvToObject
 * 1.0.4 Refactored some more aspects of this CSV parser by Daniel Tillin
 * 1.0.5 Added CSV to object by key method
 * 1.0.6 Added grouped option to CSV to object by key and csvToArrayByKey 
+* 1.0.7 Fixed some regressions on defaults, thanks to @h_classen
 */
 
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
@@ -53,23 +54,17 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 */
 	function csvToArray(csv, options) {
 		if (!csv) return;
-		var od = {
-			'fSep': count(csv,';') > count(csv, ',')? ';' : ',',
-			'rSep': getLineBreakChar(csv),
-			'quot': '"',
-			'head': false,
-			'trim': false
-		}
-		if (options) {
-			for (var i in od) {
-				if (!options[i]) options[i] = od[i];
-			}
-		} else {
-			options = od;
-		}
-		var a = [
-			['']
-		];
+
+		options = options || {};
+		
+		options.trim = options.trim || options.trimWhitespace || false;
+		options.head = options.head || options.removeHead || false;
+		options.quot = options.quot || options.quote || '"';
+		options.fSep = options.fSep || options.fieldSeparator || (count(csv,';') > count(csv, ',')? ';' : ',');
+		options.rSep = options.rSep || options.rowSeparator || (getLineBreakChar(csv));
+	
+		var a = [['']];
+
 		for (var r = f = p = q = 0; p < csv.length; p++) {
 			switch (c = csv.charAt(p)) {
 				case options.quot:
@@ -242,7 +237,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} csvToObject Convert a CSV string into an object
 	 */
 	 var HypeDataParser = {
-		version: '1.0.6',
+		version: '1.0.7',
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
 		csvToObjectByKey: csvToObjectByKey,
