@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.5
+Hype Data Parser 1.0.6
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -13,12 +13,9 @@ http://code.google.com/p/csv-to-array/
 * 1.0.3 Refactored head to removeHead, added forced removeHead false on csvToObject
 * 1.0.4 Refactored some more aspects of this CSV parser by Daniel Tillin
 * 1.0.5 Added CSV to object by key method
+* 1.0.6 Added grouped option to CSV to object by key and csvToArrayByKey 
 */
 
-/*
-*https://leanylabs.com/blog/js-csv-parsers-benchmarks/
-*
-*/
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
 
 	var _extensionName = 'Hype Data Parser';
@@ -134,6 +131,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 function csvToObject(csv, options){
 		if (!csv) return;
 		options = options || {};
+
 		var rows = csvToArray(csv, Object.assign(options, {
 			head:false
 		}));
@@ -161,10 +159,11 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @param {String|Number} key Either the key as a name or the index as a number (0 based)
 	 * @return {Object} Returns an object with named keys with nested objects containing named fields
 	 */
-	function csvToObjectByKey(csv, key){
+	function csvToObjectByKey(csv, key, options){
 		if (!csv || !key) return;
-		
-		if (!Array.isArray(csv)) csv = csvToArray(csv);
+		options = options || {};
+
+		if (!Array.isArray(csv)) csv = csvToArray(csv, options);
 
 		var rows = csv.slice(1);
 		var headers = csv.slice(0, 1)[0];		
@@ -178,9 +177,61 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 			row.forEach(function(cell, i){
 				obj[ headers[i] ] = cell;
 			});
-			data[obj[headers[keyIndex]]] = obj;
+			var currentKeyName = headers[keyIndex];
+			var currentKeyValue = obj[currentKeyName];
+			switch (options.objectByKeyMode) {
+				
+				case 'reduce':
+					data[currentKeyValue] = obj;
+					break;
+				
+				case 'list': case 'array':
+					if (!data[currentKeyValue]) data[currentKeyValue] = [];
+					data[currentKeyValue].push(obj);
+					break;
+
+				default:
+				case 'auto':
+					if (!data[currentKeyValue]){
+						data[currentKeyValue] = obj;
+					} else {
+						if (!Array.isArray(data[currentKeyValue])) data[currentKeyValue] = [data[currentKeyValue]];
+						data[currentKeyValue].push(obj);
+					}
+					break;
+			}
+			
 		});
 		
+		return data;
+	}
+
+	/**
+	 * This function parses a CSV string into an array structur 
+	 * while reducing the return to a shallow list with a single column of data
+	 * 
+	 * @param {String} csv This is the text to consider as CSV
+	 * @param {String|Number} key Either the key as a name or the index as a number (0 based)
+	 * @param {Object} options This object can be used to override defaults
+	 * @return {Array} Returns an array data from the requested column
+	 */
+	function csvToArrayByKey(csv, key, options){
+		if (!csv || !key) return;
+		options = options || {};
+
+		if (!Array.isArray(csv)) csv = csvToArray(csv, options);
+		
+		var rows = csv.slice(1);
+		var headers = csv.slice(0, 1)[0];		
+		var keyIndex = typeof key == 'number'? key : headers.indexOf(key);
+		var data = [];
+		
+		if (keyIndex == -1) return;
+
+		rows.forEach(function(row){
+			data.push(row[keyIndex]);
+		});
+
 		return data;
 	}
 
@@ -191,10 +242,11 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} csvToObject Convert a CSV string into an object
 	 */
 	 var HypeDataParser = {
-		version: '1.0.5',
+		version: '1.0.6',
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
 		csvToObjectByKey: csvToObjectByKey,
+		csvToArrayByKey: csvToArrayByKey,
 		getLineBreakChar: getLineBreakChar,
 		count: count,
 	};
