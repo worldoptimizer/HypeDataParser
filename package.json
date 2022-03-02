@@ -1,0 +1,8 @@
+{
+    "name": "Hype Data Parser",
+    "description": "Helper to parse strings into JavaScript multiple data formats and to easily extract specific facets from the data",
+    "author": "Max Ziebell",
+    "main":	"HypeDataParser.js",
+    "license": "MIT",
+    "dependencies": {}
+}
