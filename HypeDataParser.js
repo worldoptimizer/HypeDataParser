@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.8
+Hype Data Parser 1.0.9
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -17,13 +17,16 @@ http://code.google.com/p/csv-to-array/
 * 1.0.7 Fixed some regressions on defaults, thanks to @h_classen
 * 1.0.8 Remove leading and trailing whitespaces on CSV string in csvToArray, 
 		added filter option for csvToObject and csvToObjectByKey
+* 1.0.9 Added aliases to all functions to suppot TSV format without needing to
+		always specify the field separator (fSep) as tab each time
+
 */
 
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
 
 	var _extensionName = 'Hype Data Parser';
 
-	function count(str, c) { 
+	function countChar(str, c) { 
 		var result = 0;
 		for(var i = 0; i<str.length; i++) {
 			if(str[i]==c)result++;
@@ -44,11 +47,12 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	/**
 	 * This function parses a CSV string into an array structur
 	 * Given a second paramter options of type object, default options can be overriden
-	 *      * fSep defaults to ','
-	 *      * rSep defaults to '\n'
-	 *      * quot defaults to '"'
-	 *      * head defaults to false and allows ignoring the first row
-	 *      * trim defaults to false
+	 * 
+	 * * `fSep` defaults to ';' or ',' (depending on what character is found more often)
+	 * * `rSep` defaults to '\n' (depending on auto detection mechanism)
+	 * * `quot` defaults to '"'
+	 * * `head` defaults to false and allows ignoring the first row
+	 * * `trim` defaults to false
 	 * 
 	 * @param {String} csv This is the text to consider as CSV
 	 * @param {Object} options This object can be used to override defaults
@@ -62,7 +66,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		options.trim = options.trim || options.trimWhitespace || false;
 		options.head = options.head || options.removeHead || false;
 		options.quot = options.quot || options.quote || '"';
-		options.fSep = options.fSep || options.fieldSeparator || (count(csv,';') > count(csv, ',')? ';' : ',');
+		options.fSep = options.fSep || options.fieldSeparator || (countChar(csv,';') > countChar(csv, ',')? ';' : ',');
 		options.rSep = options.rSep || options.rowSeparator || (getLineBreakChar(csv));
 	
 		csv = csv.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
@@ -247,21 +251,68 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	}
 
 	/**
+	 * This is an alias to the TSV version of the csvToArray method. 
+	 * The only difference being that the field separator (fSep) is set to tab (\t). 
+	 * **Please look at the documentation for csvToArray**
+	 */
+	function tsvToArray(tsv, options) {
+		return csvToArray(tsv, Object.assign(options || {}, {fSep:'\t'}))
+	}
+
+	/**
+	 * This is an alias to the TSV version of the csvToObject method. 
+	 * The only difference being that the field separator (fSep) is set to tab (\t). 
+	 * **Please look at the documentation for csvToObject**
+	 */	
+	function tsvToObject(tsv, options) {
+		return csvToObject(tsv, Object.assign(options || {}, {fSep:'\t'}))
+	}
+
+	/**
+	 * This is an alias to the TSV version of the csvToArrayByKey method. 
+	 * The only difference being that the field separator (fSep) is set to tab (\t). 
+	 * **Please look at the documentation for csvToArrayByKey**
+	 */
+	function tsvToArrayByKey(tsv, key, options) {
+		return csvToArrayByKey(tsv, key, Object.assign(options || {}, {fSep:'\t'}))
+	}
+
+	/**
+	 * This is an alias to the TSV version of the csvToObjectByKey method. 
+	 * The only difference being that the field separator (fSep) is set to tab (\t). 
+	 * **Please look at the documentation for csvToObjectByKey**
+	 */
+	function tsvToObjectByKey(tsv, key, options) {
+		return csvToObjectByKey(tsv, key, Object.assign(options || {}, {fSep:'\t'}))
+	}
+
+	/**
 	 * @typedef {Object} HypeDataParser
 	 * @property {String} version Version of the extension
 	 * @property {Function} csvToArray Convert a CSV string into an array rows with nested cells
 	 * @property {Function} csvToArrayByKey Convert a CSV string into an array of cells
 	 * @property {Function} csvToObject Convert a CSV string into an array of nested objects (cells as key, value)
 	 * @property {Function} csvToObjectByKey Convert a CSV string into an object grouped by the specified key with array of nested objects (cells as key, value)
+	 * @property {Function} tsvToArray Convert a TSV string into an array rows with nested cells
+	 * @property {Function} tsvToArrayByKey Convert a TSV string into an array of cells
+	 * @property {Function} tsvToObject Convert a TSV string into an array of nested objects (cells as key, value)
+	 * @property {Function} tsvToObjectByKey Convert a TSV string into an object grouped by the specified key with array of nested objects (cells as key, value)
 	 */
 	 var HypeDataParser = {
-		version: '1.0.8',
+		version: '1.0.9',
+
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
 		csvToObjectByKey: csvToObjectByKey,
 		csvToArrayByKey: csvToArrayByKey,
+		
+		tsvToArray: tsvToArray,
+		tsvToObject: tsvToObject,
+		tsvToArrayByKey: tsvToArrayByKey,
+		tsvToObjectByKey: tsvToObjectByKey,
+		
 		getLineBreakChar: getLineBreakChar,
-		count: count,
+		countChar: countChar,
 	};
 
 	/** 
