@@ -233,8 +233,10 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	/**
 	 * @typedef {Object} HypeDataParser
 	 * @property {String} version Version of the extension
-	 * @property {Function} csvToArray Convert a CSV string into an array
-	 * @property {Function} csvToObject Convert a CSV string into an object
+	 * @property {Function} csvToArray Convert a CSV string into an array rows with nested cells
+	 * @property {Function} csvToArrayByKey Convert a CSV string into an array of cells
+	 * @property {Function} csvToObject Convert a CSV string into an array of nested objects (cells as key, value)
+	 * @property {Function} csvToObjectByKey Convert a CSV string into an object grouped by the specified key with array of nested objects (cells as key, value)
 	 */
 	 var HypeDataParser = {
 		version: '1.0.7',
