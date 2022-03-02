@@ -16,9 +16,9 @@ http://code.google.com/p/csv-to-array/
 * 1.0.6 Added grouped option to CSV to object by key and csvToArrayByKey 
 * 1.0.7 Fixed some regressions on defaults, thanks to @h_classen
 * 1.0.8 Remove leading and trailing whitespaces on CSV string in csvToArray, 
-		added filter option for csvToObject and csvToObjectByKey
-* 1.0.9 Added aliases to all functions to suppot TSV format without needing to
-		always specify the field separator (fSep) as tab each time
+        added filter option for csvToObject and csvToObjectByKey
+* 1.0.9 Added aliases to all functions to support TSV format without needing to
+        always specify the field separator (fSep) as tab each time
 
 */
 
