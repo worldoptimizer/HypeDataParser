@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.0.7
+Hype Data Parser 1.0.8
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -15,6 +15,8 @@ http://code.google.com/p/csv-to-array/
 * 1.0.5 Added CSV to object by key method
 * 1.0.6 Added grouped option to CSV to object by key and csvToArrayByKey 
 * 1.0.7 Fixed some regressions on defaults, thanks to @h_classen
+* 1.0.8 Remove leading and trailing whitespaces on CSV string in csvToArray, 
+		added filter option for csvToObject and csvToObjectByKey
 */
 
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
@@ -54,7 +56,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 */
 	function csvToArray(csv, options) {
 		if (!csv) return;
-
+		
 		options = options || {};
 		
 		options.trim = options.trim || options.trimWhitespace || false;
@@ -63,6 +65,8 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		options.fSep = options.fSep || options.fieldSeparator || (count(csv,';') > count(csv, ',')? ';' : ',');
 		options.rSep = options.rSep || options.rowSeparator || (getLineBreakChar(csv));
 	
+		csv = csv.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+		
 		var a = [['']];
 
 		for (var r = f = p = q = 0; p < csv.length; p++) {
@@ -138,6 +142,9 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 			row.forEach(function(cell, i){
 				obj[ headers[i] ] = cell;
 			});
+			if (typeof(options.filter)=='function') {
+				if (options.filter(obj, data, headers)===false) return;
+			}
 			data.push(obj);
 		});
 		
@@ -178,6 +185,11 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 			});
 			var currentKeyName = headers[keyIndex];
 			var currentKeyValue = obj[currentKeyName];
+			
+			if (typeof(options.filter)=='function') {
+				if (options.filter(obj, data, headers)===false) return;
+			}
+
 			switch (options.objectByKeyMode) {
 				
 				case 'reduce':
@@ -243,7 +255,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} csvToObjectByKey Convert a CSV string into an object grouped by the specified key with array of nested objects (cells as key, value)
 	 */
 	 var HypeDataParser = {
-		version: '1.0.7',
+		version: '1.0.8',
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
 		csvToObjectByKey: csvToObjectByKey,
