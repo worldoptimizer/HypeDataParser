@@ -152,6 +152,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * 
 	 * @param {String} csv This is the text to consider as CSV
 	 * @param {String|Number} key Either the key as a name or the index as a number (0 based)
+	 * @param {Object} options This object can be used to override defaults
 	 * @return {Object} Returns an object with named keys with nested objects containing named fields
 	 */
 	function csvToObjectByKey(csv, key, options){
