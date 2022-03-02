@@ -145,10 +145,13 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	}
 
 	/**
-	 * This function uses csvToObjectByKey (see function description), but converts 
-	 * the rows into an object with a keys based on specific a header key.
-	 * These branches in turn containing objects with keys based on the header.
-	 * This is ideal for ID based lookups.
+	 * Parse a CSV file into an object grouped by the specified key, containing each an array of rows of nested objects with named cells (key and value). 
+	 * If a specific object key only has a single member, the object is directly listed without being nested in an array. The behavior of this function 
+	 * can be modified by specifying the value of `options.objectByKeyMode`:
+	 *
+	 *	* `auto` (default) - this setting parses each nested key into a direct object, but converts it into a list if multiple elements by the key are found
+	 *	* `list` - this setting always forces a nested array listing. Hence, even single entries by the specified key will result in a nested array
+	 * 	* `reduce` - this function never creates a nested list and multiple entries by a specified key overwrite each other and the last occurrence prevails
 	 * 
 	 * @param {String} csv This is the text to consider as CSV
 	 * @param {String|Number} key Either the key as a name or the index as a number (0 based)
