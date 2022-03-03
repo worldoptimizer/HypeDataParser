@@ -19,6 +19,8 @@ http://code.google.com/p/csv-to-array/
         added filter option for csvToObject and csvToObjectByKey
 * 1.0.9 Added aliases to all functions to support TSV format without needing to
         always specify the field separator (fSep) as tab each time
+* 1.1.0 Added getTables to extract mutliple tables from a single CSV/TSV string
+        with the option to parse the tables directly as data, added includesTables
 
 */
 
@@ -26,14 +28,27 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 
 	var _extensionName = 'Hype Data Parser';
 
+	/**
+	 * This function counts the times a char is found in a string
+	 * 
+	 * @param {String} str This is the text to be searched in
+	 * @param {Char} c This is the single text character to search
+	 * @return {Number} Returns a number of found matches
+	 */
 	function countChar(str, c) { 
 		var result = 0;
 		for(var i = 0; i<str.length; i++) {
-			if(str[i]==c)result++;
+			if(str[i]==c) result++;
 		}
 		return result;
 	};
 
+	/**
+	 * This function determines the line endings used in a string
+	 * 
+	 * @param {String} str This is the text to inspect
+	 * @return {Number} Returns the used line ending type
+	 */
 	function getLineBreakChar(str) {
 		const indexOfLF = str.indexOf('\n', 1);
 		if (indexOfLF === -1) {
@@ -43,13 +58,53 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		if (str[indexOfLF - 1] === '\r') return '\r\n';
 		return '\n';
 	}
+	
+	/**
+	 * This function splits a string containing multiple CSV/TSV tables
+	 * and returns an object of string or if optionaly into a data format
+	 * 
+	 * @param {String} text This is the text (either TSV or CSV) containing the tables
+	 * @param {Boolean} convert If this boolean is set to true table is directly converted else it is kept as a string
+	 * @param {Object} options This object can be used to override defaults and is only used if conversion is enabled
+	 * @return {Object} Returns an object with tables referenced by index and if provided also by sheet and table name
+	 */
+	function getTables(text, convert, options){
+		var nl = getLineBreakChar(text);
+		var tables = text.split(nl+nl);
+		var data = {}
+		tables.forEach(function(table, index){
+			var tableInfo = table.split(new RegExp('^(.*):\\s(.*)'+nl));
+			var tableData;
+			if (tableInfo.length>1){
+				var sheetName = tableInfo[1];
+				var tableName = tableInfo[2];
+				if (!data[sheetName]) data[sheetName] = {}
+				tableData = convert? csvToArray(tableInfo[3], options) : tableInfo[3];
+				data[sheetName][tableName] = tableData;
+			}
+			tableData = tableData || (convert? csvToArray(table, options) : table);
+			if (tableData) data[index] =  tableData;
+		});
+		return data;
+	}
+
+	/**
+	 * This function determines if a string most likely contains multiple tables (very simple check)
+	 * 
+	 * @param {String} str This is the text to inspect
+	 * @return {Boolean} Returns if the provided text contains multiple tables
+	 */
+	function includesTables(text){
+		var nl = getLineBreakChar(text);
+		return text.indexOf(nl+nl) !== -1;
+	}
 
 	/**
 	 * This function parses a CSV string into an array structur
 	 * Given a second paramter options of type object, default options can be overriden
 	 * 
 	 * * `fSep` defaults to ';' or ',' (depending on what character is found more often)
-	 * * `rSep` defaults to '\n' (depending on auto detection mechanism)
+	 * * `rSep` defaults to '\n', '\r' or '\r\n' (depending on auto detection mechanism)
 	 * * `quot` defaults to '"'
 	 * * `head` defaults to false and allows ignoring the first row
 	 * * `trim` defaults to false
@@ -160,9 +215,9 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * If a specific object key only has a single member, the object is directly listed without being nested in an array. The behavior of this function 
 	 * can be modified by specifying the value of `options.objectByKeyMode`:
 	 *
-	 *	* `auto` (default) - this setting parses each nested key into a direct object, but converts it into a list if multiple elements by the key are found
-	 *	* `list` - this setting always forces a nested array listing. Hence, even single entries by the specified key will result in a nested array
-	 * 	* `reduce` - this function never creates a nested list and multiple entries by a specified key overwrite each other and the last occurrence prevails
+	 * * `auto` (default) - this setting parses each nested key into a direct object, but converts it into a list if multiple elements by the key are found
+	 * * `list` - this setting always forces a nested array listing. Hence, even single entries by the specified key will result in a nested array
+	 * * `reduce` - this function never creates a nested list and multiple entries by a specified key overwrite each other and the last occurrence prevails
 	 * 
 	 * @param {String} csv This is the text to consider as CSV
 	 * @param {String|Number} key Either the key as a name or the index as a number (0 based)
@@ -297,9 +352,13 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} tsvToArrayByKey Convert a TSV string into an array of cells
 	 * @property {Function} tsvToObject Convert a TSV string into an array of nested objects (cells as key, value)
 	 * @property {Function} tsvToObjectByKey Convert a TSV string into an object grouped by the specified key with array of nested objects (cells as key, value)
-	 */
+	 * @property {Function} getTables Returns all found tables in an object lookup with index keys. If provided sheet and table names are additionaly used in the lookup.
+	 * @property {Function} includesTables Returns a boolean indicating if a CSV/TSV string most likely contains multiple tables (simple check)
+	 * @property {Function} getLineBreakChar Returns the line break character used in a multiline string
+	 * @property {Function} countChar Returns the number of occurances of a given char in a string
+	*/
 	 var HypeDataParser = {
-		version: '1.0.9',
+		version: '1.1.0',
 
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
@@ -311,6 +370,9 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		tsvToArrayByKey: tsvToArrayByKey,
 		tsvToObjectByKey: tsvToObjectByKey,
 		
+		getTables: getTables,
+		includesTables: includesTables,
+
 		getLineBreakChar: getLineBreakChar,
 		countChar: countChar,
 	};
