@@ -19,7 +19,7 @@ http://code.google.com/p/csv-to-array/
         added filter option for csvToObject and csvToObjectByKey
 * 1.0.9 Added aliases to all functions to support TSV format without needing to
         always specify the field separator (fSep) as tab each time
-* 1.1.0 Added getTables to extract mutliple tables from a single CSV/TSV string
+* 1.1.0 Added getTables to extract multiple tables from a single CSV/TSV string
         with the option to parse the tables directly as data, added includesTables
 
 */
