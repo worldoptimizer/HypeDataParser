@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.1.0
+Hype Data Parser 1.1.1
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -21,6 +21,7 @@ http://code.google.com/p/csv-to-array/
         always specify the field separator (fSep) as tab each time
 * 1.1.0 Added getTables to extract multiple tables from a single CSV/TSV string
         with the option to parse the tables directly as data, added includesTables
+* 1.1.1 Fixed some issues when reusing previously converted data from csvToArray
 
 */
 
@@ -114,7 +115,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @return {Array} Returns an array of rows with nested arrays of field data
 	 */
 	function csvToArray(csv, options) {
-		if (!csv) return;
+		if (typeof(csv) !== 'string') return;
 		
 		options = options || {};
 		
@@ -190,10 +191,12 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		if (!csv) return;
 		options = options || {};
 
-		var rows = csvToArray(csv, Object.assign(options, {
+		if (!Array.isArray(csv)) csv = csvToArray(csv, Object.assign(options, {
 			head:false
 		}));
-		var headers = rows.shift();
+
+		var rows = csv.slice(1);
+		var headers = csv.slice(0, 1)[0];
 		var data = [];
 		
 		rows.forEach(function(row){
@@ -228,7 +231,9 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		if (!csv || !key) return;
 		options = options || {};
 
-		if (!Array.isArray(csv)) csv = csvToArray(csv, options);
+		if (!Array.isArray(csv)) csv = csvToArray(csv, Object.assign(options, {
+			head:false
+		}));
 
 		var rows = csv.slice(1);
 		var headers = csv.slice(0, 1)[0];		
@@ -289,7 +294,9 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		if (!csv || !key) return;
 		options = options || {};
 
-		if (!Array.isArray(csv)) csv = csvToArray(csv, options);
+		if (!Array.isArray(csv)) csv = csvToArray(csv, Object.assign(options, {
+			head: false
+		}));
 		
 		var rows = csv.slice(1);
 		var headers = csv.slice(0, 1)[0];		
@@ -358,7 +365,7 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} countChar Returns the number of occurances of a given char in a string
 	*/
 	 var HypeDataParser = {
-		version: '1.1.0',
+		version: '1.1.1',
 
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
