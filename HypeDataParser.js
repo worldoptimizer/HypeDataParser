@@ -1,5 +1,5 @@
 /*!
-Hype Data Parser 1.1.1
+Hype Data Parser 1.1.2
 copyright (c) 2022 Max Ziebell, (https://maxziebell.de). MIT-license
 Based on csvToArray from Daniel Tillin 2011-2013
 http://code.google.com/p/csv-to-array/
@@ -22,7 +22,8 @@ http://code.google.com/p/csv-to-array/
 * 1.1.0 Added getTables to extract multiple tables from a single CSV/TSV string
         with the option to parse the tables directly as data, added includesTables
 * 1.1.1 Fixed some issues when reusing previously converted data from csvToArray
-
+* 1.1.2 Added rowsToColumns to transpose data in an array if needed, 
+        added redirection through getTables in csvToArray if includesTables is true
 */
 
 if("HypeDataParser" in window === false) window['HypeDataParser'] = (function () {
@@ -115,10 +116,11 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @return {Array} Returns an array of rows with nested arrays of field data
 	 */
 	function csvToArray(csv, options) {
+		
 		if (typeof(csv) !== 'string') return;
-		
+		if(includesTables(csv)) return getTables(csv,  true);
+
 		options = options || {};
-		
 		options.trim = options.trim || options.trimWhitespace || false;
 		options.head = options.head || options.removeHead || false;
 		options.quot = options.quot || options.quote || '"';
@@ -170,12 +172,37 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		if (options.head) {
 			a.shift()
 		}
-		if (a[a.length - 1].length < a[0].length) {
-			a.pop()
-		}
+
 		return a;
 	}
 
+	/**
+	 * This function transposes rows to columns as long as the length of the inital row is the same
+	 * 
+	 * @param {String} csv This is the text to consider as CSV
+	 * @param {Object} options This object can be used to override defaults
+	 * @return {Array} Returns an array of rows transposed to columns
+	 */
+	function rowsToColumns(csv, options){
+		if (!csv) return;
+		options = options || {};
+
+		if (!Array.isArray(csv)) csv = csvToArray(csv, Object.assign(options, {
+			head:false
+		}));
+
+		var rows = csv.length, cols = csv[0].length;
+		var data = [];
+	
+		for (var i = 0; i < rows && csv[i].length == cols; i++) {
+			for (var j = 0; j < cols; j++) {
+				if (!data[j]) data[j] = [];
+				data[j][i] = csv[i][j];
+			}
+		}
+
+		return data;
+	}
 
 	/**
 	 * This function uses csvToArray (see function description), but converts 
@@ -359,13 +386,14 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 	 * @property {Function} tsvToArrayByKey Convert a TSV string into an array of cells
 	 * @property {Function} tsvToObject Convert a TSV string into an array of nested objects (cells as key, value)
 	 * @property {Function} tsvToObjectByKey Convert a TSV string into an object grouped by the specified key with array of nested objects (cells as key, value)
+	 * @property {Function} rowsToColumns Returns a transposed array shifting row into columns (works on values from csvToArray)
 	 * @property {Function} getTables Returns all found tables in an object lookup with index keys. If provided sheet and table names are additionaly used in the lookup.
 	 * @property {Function} includesTables Returns a boolean indicating if a CSV/TSV string most likely contains multiple tables (simple check)
 	 * @property {Function} getLineBreakChar Returns the line break character used in a multiline string
 	 * @property {Function} countChar Returns the number of occurances of a given char in a string
 	*/
 	 var HypeDataParser = {
-		version: '1.1.1',
+		version: '1.1.2',
 
 		csvToArray: csvToArray,
 		csvToObject: csvToObject,
@@ -376,6 +404,8 @@ if("HypeDataParser" in window === false) window['HypeDataParser'] = (function ()
 		tsvToObject: tsvToObject,
 		tsvToArrayByKey: tsvToArrayByKey,
 		tsvToObjectByKey: tsvToObjectByKey,
+
+		rowsToColumns: rowsToColumns,
 		
 		getTables: getTables,
 		includesTables: includesTables,
